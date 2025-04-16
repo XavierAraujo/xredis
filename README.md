@@ -39,39 +39,60 @@ You can use the official redis-cli tool to interact with your GoRedis server:
 redis-cli -p 6379
 ```bash
 # PING
-127.0.0.1:6379> PING
+> PING
 PONG
 
 # ECHO
-127.0.0.1:6379> ECHO "Hello"
+> ECHO "Hello"
 "Hello"
 
 # SET and GET
-127.0.0.1:6379> SET mykey "GoLang"
+> SET mykey "GoLang"
 OK
-127.0.0.1:6379> GET mykey
+> GET mykey
 "GoLang"
 
+# EXISTS
+> EXISTS mykey
+(integer) 1
+> EXISTS nonexisting
+(integer) 0
+
+# DEL
+> DEL mykey
+(integer) 1
+> GET mykey
+(nil)
+
 # SET with EX (expiry in seconds)
-127.0.0.1:6379> SET temp "data" EX 5
+> SET temp "data" EX 5
 OK
-127.0.0.1:6379> GET temp
+> GET temp
 "data"
 # Wait 5 seconds...
-127.0.0.1:6379> GET temp
+> GET temp
 (nil)
 
 # INCR and DECR
-127.0.0.1:6379> SET counter 10
+> SET counter 10
 OK
-127.0.0.1:6379> INCR counter
+> INCR counter
 (integer) 11
-127.0.0.1:6379> DECR counter
+> DECR counter
 (integer) 10
 
 # LPUSH and RPUSH
-127.0.0.1:6379> LPUSH mylist "one"
+> LPUSH mylist "one"
 (integer) 1
-127.0.0.1:6379> RPUSH mylist "two"
+> RPUSH mylist "two"
 (integer) 2
+```
+
+
+## 🧪 How to test
+
+Just run
+
+```bash
+go test
 ```
