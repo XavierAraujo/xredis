@@ -363,10 +363,10 @@ func tryGetAsRespInt(element RespDataType) (RespInt, bool) {
 		return respInt, true
 	}
 
-	respStr, isStr := element.(RespString)
+	respStr, isStr := element.(RespBulkString)
 	if isStr {
 		value, err := strconv.ParseInt(respStr.str, 10, 64)
-		if err != nil {
+		if err == nil {
 			return RespInt{value}, true
 		}
 	}
