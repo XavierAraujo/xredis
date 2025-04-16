@@ -14,11 +14,11 @@ const BANNER = `
  __ ___ _ ___ __| (_)___
  \ \ / '_/ -_) _| | (_-<
  /_\_\_| \___\__,_|_/__/
-                        
+
 `
 
 func main() {
-	fmt.Println(BANNER)
+	fmt.Print(BANNER)
 	log.Println("Starting xRedis")
 	xredis := NewXRedis()
 	listener, err := net.Listen(SERVER_NETWORK_PROTOCOL, ":"+SERVER_PORT)
