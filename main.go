@@ -50,7 +50,7 @@ func handleConnection(xredis *XRedis, conn net.Conn) {
 			return
 		}
 
-		rsp := xredis.handleClientRequest(data)
+		rsp := xredis.handleRequest(data)
 		conn.Write([]byte(rsp.serialize()))
 	}
 }

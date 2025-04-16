@@ -114,8 +114,7 @@ func (xredis *XRedis) handleLPushCommand(cmd LPushCommand) {
 		return
 	}
 
-	newList := RespArray{append([]RespDataType{cmd.value}, respArray.elements...)}
-	xredis.cache[cmd.key] = newList
+	xredis.cache[cmd.key] = RespArray{append([]RespDataType{cmd.value}, respArray.elements...)}
 	cmd.rspChannel <- RespString{REQUEST_RESULT_OK}
 	close(cmd.rspChannel)
 }
@@ -131,14 +130,13 @@ func (xredis *XRedis) handleRPushCommand(cmd RPushCommand) {
 		return
 	}
 
-	newList := RespArray{append(respArray.elements, cmd.value)}
-	xredis.cache[cmd.key] = newList
+	xredis.cache[cmd.key] = RespArray{append(respArray.elements, cmd.value)}
 	cmd.rspChannel <- RespString{REQUEST_RESULT_OK}
 	close(cmd.rspChannel)
 }
 
-func (xredis *XRedis) handleClientRequest(data []byte) RespDataType {
-	respData, _, err := deserialize(data)
+func (xredis *XRedis) handleRequest(data []byte) RespDataType {
+	respData, _, err := deserializeClientRequest(data)
 	if err != nil {
 		return RespError{REQUEST_ERROR_FAILED_DESERIALIZATION}
 	}
@@ -152,45 +150,45 @@ func (xredis *XRedis) handleClientRequest(data []byte) RespDataType {
 
 	switch command {
 	case REQUEST_PING:
-		return handleClientPingRequest(commandData)
+		return handlePingRequest(commandData)
 	case REQUEST_ECHO:
-		return handleClientEchoRequest(commandData)
+		return handleEchoRequest(commandData)
 	case REQUEST_SET:
-		return handleClientSetRequest(commandData, xredis)
+		return handleSetRequest(commandData, xredis)
 	case REQUEST_GET:
-		return handleClientGetRequest(commandData, xredis)
+		return handleGetRequest(commandData, xredis)
 	case REQUEST_DELETE:
-		return handleClientDeleteRequest(commandData, xredis)
+		return handleDeleteRequest(commandData, xredis)
 	case REQUEST_EXISTS:
-		return handleClientExistsRequest(commandData, xredis)
+		return handleExistsRequest(commandData, xredis)
 	case REQUEST_INCREMENT:
-		return handleClientIncrementRequest(commandData, xredis)
+		return handleIncrementRequest(commandData, xredis)
 	case REQUEST_DECREMENT:
-		return handleClientDecrementRequest(commandData, xredis)
+		return handleDecrementRequest(commandData, xredis)
 	case REQUEST_LPUSH:
-		return handleClientLPushRequest(commandData, xredis)
+		return handleLPushRequest(commandData, xredis)
 	case REQUEST_RPUSH:
-		return handleClientRPushRequest(commandData, xredis)
+		return handleRPushRequest(commandData, xredis)
 	default:
 		return RespError{REQUEST_ERROR_INVALID_COMMAND}
 	}
 }
 
-func handleClientPingRequest(requestData RespArray) RespDataType {
+func handlePingRequest(requestData RespArray) RespDataType {
 	if len(requestData.elements) != REQUEST_PING_EXPECTED_SIZE {
 		return RespError{REQUEST_ERROR_INVALID_ARGUMENTS_NUMBER}
 	}
-	return RespString{"PONG"}
+	return RespString{REQUEST_PING_RSP}
 }
 
-func handleClientEchoRequest(requestData RespArray) RespDataType {
+func handleEchoRequest(requestData RespArray) RespDataType {
 	if len(requestData.elements) != REQUEST_ECHO_EXPECTED_SIZE {
 		return RespError{REQUEST_ERROR_INVALID_ARGUMENTS_NUMBER}
 	}
 	return requestData.elements[REQUEST_ECHO_VALUE]
 }
 
-func handleClientSetRequest(requestData RespArray, xredis *XRedis) RespDataType {
+func handleSetRequest(requestData RespArray, xredis *XRedis) RespDataType {
 	err := validateSetRequestData(requestData)
 	if err != nil {
 		return RespError{err.Error()}
@@ -214,7 +212,7 @@ func handleClientSetRequest(requestData RespArray, xredis *XRedis) RespDataType 
 	return <-rspChan
 }
 
-func handleClientGetRequest(requestData RespArray, xredis *XRedis) RespDataType {
+func handleGetRequest(requestData RespArray, xredis *XRedis) RespDataType {
 	if len(requestData.elements) != REQUEST_GET_EXPECTED_SIZE {
 		return RespError{REQUEST_ERROR_INVALID_ARGUMENTS_NUMBER}
 	}
@@ -224,7 +222,7 @@ func handleClientGetRequest(requestData RespArray, xredis *XRedis) RespDataType 
 	return <-rspChan
 }
 
-func handleClientExistsRequest(requestData RespArray, xredis *XRedis) RespDataType {
+func handleExistsRequest(requestData RespArray, xredis *XRedis) RespDataType {
 	if len(requestData.elements) != REQUEST_EXISTS_EXPECTED_SIZE {
 		return RespError{REQUEST_ERROR_INVALID_ARGUMENTS_NUMBER}
 	}
@@ -234,7 +232,7 @@ func handleClientExistsRequest(requestData RespArray, xredis *XRedis) RespDataTy
 	return <-rspChan
 }
 
-func handleClientDeleteRequest(requestData RespArray, xredis *XRedis) RespDataType {
+func handleDeleteRequest(requestData RespArray, xredis *XRedis) RespDataType {
 	if len(requestData.elements) != REQUEST_DELETE_EXPECTED_SIZE {
 		return RespError{REQUEST_ERROR_INVALID_ARGUMENTS_NUMBER}
 	}
@@ -244,7 +242,7 @@ func handleClientDeleteRequest(requestData RespArray, xredis *XRedis) RespDataTy
 	return <-rspChan
 }
 
-func handleClientIncrementRequest(requestData RespArray, xredis *XRedis) RespDataType {
+func handleIncrementRequest(requestData RespArray, xredis *XRedis) RespDataType {
 	if len(requestData.elements) != REQUEST_INCREMENT_EXPECTED_SIZE {
 		return RespError{REQUEST_ERROR_INVALID_ARGUMENTS_NUMBER}
 	}
@@ -254,7 +252,7 @@ func handleClientIncrementRequest(requestData RespArray, xredis *XRedis) RespDat
 	return <-rspChan
 }
 
-func handleClientDecrementRequest(requestData RespArray, xredis *XRedis) RespDataType {
+func handleDecrementRequest(requestData RespArray, xredis *XRedis) RespDataType {
 	if len(requestData.elements) != REQUEST_DECREMENT_EXPECTED_SIZE {
 		return RespError{REQUEST_ERROR_INVALID_ARGUMENTS_NUMBER}
 	}
@@ -264,7 +262,7 @@ func handleClientDecrementRequest(requestData RespArray, xredis *XRedis) RespDat
 	return <-rspChan
 }
 
-func handleClientLPushRequest(requestData RespArray, xredis *XRedis) RespDataType {
+func handleLPushRequest(requestData RespArray, xredis *XRedis) RespDataType {
 	if len(requestData.elements) != REQUEST_LPUSH_EXPECTED_SIZE {
 		return RespError{REQUEST_ERROR_INVALID_ARGUMENTS_NUMBER}
 	}
@@ -275,7 +273,7 @@ func handleClientLPushRequest(requestData RespArray, xredis *XRedis) RespDataTyp
 	return <-rspChan
 }
 
-func handleClientRPushRequest(requestData RespArray, xredis *XRedis) RespDataType {
+func handleRPushRequest(requestData RespArray, xredis *XRedis) RespDataType {
 	if len(requestData.elements) != REQUEST_RPUSH_EXPECTED_SIZE {
 		return RespError{REQUEST_ERROR_INVALID_ARGUMENTS_NUMBER}
 	}
@@ -301,7 +299,6 @@ func validateSetRequestData(requestData RespArray) error {
 			if !isInt64String(requestData.elements[REQUEST_SET_TIMEOUT_INDEX].(RespString).str) {
 				return errors.New(REQUEST_ERROR_INVALID_TIMEOUT_VALUE)
 			}
-			break
 		default:
 			return errors.New(REQUEST_ERROR_UNRECOGNIZED_TIMEOUT_MODE)
 		}
