@@ -104,7 +104,6 @@ func (xredis *XRedis) handleDecrementCommand(cmd DecrementCommand) {
 }
 
 func (xredis *XRedis) handleLPushCommand(cmd LPushCommand) {
-	xredis.handleLPushCommand(cmd)
 	if xredis.cache[cmd.key] == nil {
 		xredis.cache[cmd.key] = RespArray{make([]RespDataType, 0)}
 	}
@@ -122,7 +121,6 @@ func (xredis *XRedis) handleLPushCommand(cmd LPushCommand) {
 }
 
 func (xredis *XRedis) handleRPushCommand(cmd RPushCommand) {
-	xredis.handleRPushCommand(cmd)
 	if xredis.cache[cmd.key] == nil {
 		xredis.cache[cmd.key] = RespArray{make([]RespDataType, 0)}
 	}

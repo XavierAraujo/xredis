@@ -239,3 +239,46 @@ func TestDecrementNonNumericKey(t *testing.T) {
 	_, ok := decrRsp.(RespError)
 	assert.True(t, ok)
 }
+
+func TestBasicLPush(t *testing.T) {
+	xredis := NewXRedis()
+
+	lpushCommand1 := "*3\r\n$5\r\nLPUSH\r\n$4\r\nlist\r\n$4\r\nxxxx\r\n"
+	lpushCommand2 := "*3\r\n$5\r\nLPUSH\r\n$4\r\nlist\r\n$4\r\nyyyy\r\n"
+	lpushCommand3 := "*3\r\n$5\r\nLPUSH\r\n$4\r\nlist\r\n$4\r\nzzzz\r\n"
+	_ = xredis.handleClientRequest([]byte(lpushCommand1))
+	_ = xredis.handleClientRequest([]byte(lpushCommand2))
+	_ = xredis.handleClientRequest([]byte(lpushCommand3))
+
+	getCommand := "*2\r\n$3\r\nGET\r\n$4\r\nlist\r\n"
+	getRsp := xredis.handleClientRequest([]byte(getCommand))
+	list := getRsp.(RespArray)
+	elem1 := list.elements[0].(RespString)
+	elem2 := list.elements[1].(RespString)
+	elem3 := list.elements[2].(RespString)
+	assert.Equal(t, "zzzz", elem1.str)
+	assert.Equal(t, "yyyy", elem2.str)
+	assert.Equal(t, "xxxx", elem3.str)
+}
+
+func TestBasicRPush(t *testing.T) {
+	xredis := NewXRedis()
+
+	rpushCommand1 := "*3\r\n$5\r\nRPUSH\r\n$4\r\nlist\r\n$4\r\nxxxx\r\n"
+	rpushCommand2 := "*3\r\n$5\r\nRPUSH\r\n$4\r\nlist\r\n$4\r\nyyyy\r\n"
+	rpushCommand3 := "*3\r\n$5\r\nRPUSH\r\n$4\r\nlist\r\n$4\r\nzzzz\r\n"
+	_ = xredis.handleClientRequest([]byte(rpushCommand1))
+	_ = xredis.handleClientRequest([]byte(rpushCommand2))
+	_ = xredis.handleClientRequest([]byte(rpushCommand3))
+
+	getCommand := "*2\r\n$3\r\nGET\r\n$4\r\nlist\r\n"
+	getRsp := xredis.handleClientRequest([]byte(getCommand))
+	list := getRsp.(RespArray)
+	elem1 := list.elements[0].(RespString)
+	elem2 := list.elements[1].(RespString)
+	elem3 := list.elements[2].(RespString)
+	assert.Equal(t, "xxxx", elem1.str)
+	assert.Equal(t, "yyyy", elem2.str)
+	assert.Equal(t, "zzzz", elem3.str)
+}
+
