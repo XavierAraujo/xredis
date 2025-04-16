@@ -46,7 +46,7 @@ func NewXRedis() *XRedis {
 				if xredis.cache[cmd.key] == nil {
 					xredis.cache[cmd.key] = RespInt{0}
 				}
-				respInt, ok := xredis.cache[cmd.key].(RespInt)
+				respInt, ok := tryGetAsRespInt(xredis.cache[cmd.key])
 				if !ok || respInt.value == math.MaxInt64 {
 					cmd.rspChannel <- RespError{COMMAND_ERROR_VALUE_NOT_NUMERIC_OR_MAX_REACHED}
 					close(cmd.rspChannel)
@@ -62,7 +62,7 @@ func NewXRedis() *XRedis {
 				if xredis.cache[cmd.key] == nil {
 					xredis.cache[cmd.key] = RespInt{0}
 				}
-				respInt, ok := xredis.cache[cmd.key].(RespInt)
+				respInt, ok := tryGetAsRespInt(xredis.cache[cmd.key])
 				if !ok || respInt.value == math.MinInt64 {
 					cmd.rspChannel <- RespError{COMMAND_ERROR_VALUE_NOT_NUMERIC_OR_MAX_REACHED}
 					close(cmd.rspChannel)
@@ -273,7 +273,7 @@ func validateSetCommandData(commandData RespArray) error {
 		case COMMAND_SET_TIMEOUT_MODE_EXPIRE_MILLISECONDS:
 		case COMMAND_SET_TIMEOUT_MODE_TIMESTAMP_SECONDS:
 		case COMMAND_SET_TIMEOUT_MODE_TIMESTAMP_MILLISECONDS:
-			if !isIntString(commandData.elements[COMMAND_SET_TIMEOUT_INDEX].(RespBulkString).str) {
+			if !isInt64String(commandData.elements[COMMAND_SET_TIMEOUT_INDEX].(RespBulkString).str) {
 				return errors.New(COMMAND_ERROR_INVALID_TIMEOUT_VALUE)
 			}
 			break
@@ -325,7 +325,24 @@ func bool2Int(boolVal bool) int {
 	return val
 }
 
-func isIntString(str string) bool {
+func isInt64String(str string) bool {
 	_, err := strconv.ParseInt(str, 10, 64)
 	return err == nil
+}
+
+func tryGetAsRespInt(element RespDataType) (RespInt, bool) {
+	respInt, isInt := element.(RespInt)
+	if isInt {
+		return respInt, true
+	}
+
+	respStr, isStr := element.(RespString)
+	if isStr {
+		value, err := strconv.ParseInt(respStr.str, 10, 64)
+		if err != nil {
+			return RespInt{value}, true
+		}
+	}
+
+	return RespInt{}, false
 }
