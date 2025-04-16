@@ -8,14 +8,14 @@ import (
 
 func TestBasicRespStringSerializer(t *testing.T) {
 	respStr := RespString{"hello world"}
-	expectedSerializedStr := "+hello world\r\n"
+	expectedSerializedStr := "$11\r\nhello world\r\n"
 	actualSerializedStr := respStr.serialize()
 	assert.Equal(t, expectedSerializedStr, actualSerializedStr)
 }
 
 func TestEmptyRespStringSerializer(t *testing.T) {
 	respStr := RespString{""}
-	expectedSerializedStr := "+\r\n"
+	expectedSerializedStr := "$0\r\n\r\n"
 	actualSerializedStr := respStr.serialize()
 	assert.Equal(t, expectedSerializedStr, actualSerializedStr)
 }
@@ -41,20 +41,6 @@ func TestEmptyRespErrorSerializer(t *testing.T) {
 	assert.Equal(t, expectedSerializedError, actualSerializedError)
 }
 
-func TestBasicRespBulkStringSerializer(t *testing.T) {
-	respBulkStr := RespBulkString{"hello world"}
-	expectedSerializedBulkStr := "$11\r\nhello world\r\n"
-	actualSerializedBulkStr := respBulkStr.serialize()
-	assert.Equal(t, expectedSerializedBulkStr, actualSerializedBulkStr)
-}
-
-func TestEmptyRespBulkStringSerializer(t *testing.T) {
-	respBulkStr := RespBulkString{""}
-	expectedSerializedBulkStr := "$0\r\n\r\n"
-	actualSerializedBulkStr := respBulkStr.serialize()
-	assert.Equal(t, expectedSerializedBulkStr, actualSerializedBulkStr)
-}
-
 func TestEmptyRespArraySerializer(t *testing.T) {
 	respArray := RespArray{}
 	expectedSerializedArray := "*0\r\n"
@@ -68,7 +54,7 @@ func TestStringRespArraySerializer(t *testing.T) {
 	respStrs = append(respStrs, RespString{"blo"})
 	respStrs = append(respStrs, RespString{"bli"})
 	respArray := RespArray{respStrs}
-	expectedSerializedArray := "*3\r\n+bla\r\n+blo\r\n+bli\r\n"
+	expectedSerializedArray := "*3\r\n$3\r\nbla\r\n$3\r\nblo\r\n$3\r\nbli\r\n"
 	actualSerializedArray := respArray.serialize()
 	assert.Equal(t, expectedSerializedArray, actualSerializedArray)
 }
@@ -131,7 +117,7 @@ func TestBasicBulkStringDeserialization(t *testing.T) {
 	serializedData := []byte("$16\r\nhello world bulk\r\n")
 	dataType, bytesConsumed, err := deserialize(serializedData)
 	assert.Nil(t, err)
-	respString, ok := dataType.(RespBulkString)
+	respString, ok := dataType.(RespString)
 	assert.Equal(t, true, ok)
 	assert.Equal(t, "hello world bulk", respString.str)
 	assert.Equal(t, 23, bytesConsumed)
@@ -143,13 +129,13 @@ func TestBasicBulkStringArrayDeserialization(t *testing.T) {
 	assert.Nil(t, err)
 	respArray, ok := dataType.(RespArray)
 	assert.Equal(t, true, ok)
-	respBulkString1, ok := respArray.elements[0].(RespBulkString)
-	respBulkString2, ok := respArray.elements[1].(RespBulkString)
-	respBulkString3, ok := respArray.elements[2].(RespBulkString)
+	respString1, ok := respArray.elements[0].(RespString)
+	respString2, ok := respArray.elements[1].(RespString)
+	respString3, ok := respArray.elements[2].(RespString)
 	assert.Equal(t, 3, len(respArray.elements))
-	assert.Equal(t, "bla", respBulkString1.str)
-	assert.Equal(t, "blo", respBulkString2.str)
-	assert.Equal(t, "bli", respBulkString3.str)
+	assert.Equal(t, "bla", respString1.str)
+	assert.Equal(t, "blo", respString2.str)
+	assert.Equal(t, "bli", respString3.str)
 	assert.Equal(t, 31, bytesConsumed)
 }
 
@@ -159,17 +145,17 @@ func TestMixedDataTypesArrayDeserialization(t *testing.T) {
 	assert.Nil(t, err)
 	respArray, ok := dataType.(RespArray)
 	assert.Equal(t, true, ok)
-	respBulkString, ok := respArray.elements[0].(RespBulkString)
+	respString1, ok := respArray.elements[0].(RespString)
 	respInt, ok := respArray.elements[1].(RespInt)
-	respString, ok := respArray.elements[2].(RespString)
+	respString2, ok := respArray.elements[2].(RespString)
 	respError, ok := respArray.elements[3].(RespError)
 	respSubArray, ok := respArray.elements[4].(RespArray)
 	assert.Equal(t, 5, len(respArray.elements))
-	assert.Equal(t, "bla", respBulkString.str)
+	assert.Equal(t, "bla", respString1.str)
 	assert.Equal(t, int64(2025), respInt.value)
-	assert.Equal(t, "bli", respString.str)
+	assert.Equal(t, "bli", respString2.str)
 	assert.Equal(t, "err", respError.str)
-	assert.Equal(t, "bla", respSubArray.elements[0].(RespBulkString).str)
-	assert.Equal(t, "blo", respSubArray.elements[1].(RespBulkString).str)
+	assert.Equal(t, "bla", respSubArray.elements[0].(RespString).str)
+	assert.Equal(t, "blo", respSubArray.elements[1].(RespString).str)
 	assert.Equal(t, 54, bytesConsumed)
 }

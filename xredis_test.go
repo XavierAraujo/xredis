@@ -13,9 +13,9 @@ func TestPingCommand(t *testing.T) {
 
 	pingCommand := "*1\r\n$4\r\nPING\r\n"
 	rsp := xredis.handleClientRequest([]byte(pingCommand))
-	rspData, ok := rsp.(RespBulkString)
+	rspData, ok := rsp.(RespString)
 	assert.True(t, ok)
-	assert.Equal(t, RespBulkString{"PONG"}, rspData)
+	assert.Equal(t, RespString{"PONG"}, rspData)
 }
 
 func TestEchoCommand(t *testing.T) {
@@ -23,9 +23,9 @@ func TestEchoCommand(t *testing.T) {
 
 	echoCommand := "*2\r\n$4\r\nECHO\r\n$16\r\necho-hello-world"
 	rsp := xredis.handleClientRequest([]byte(echoCommand))
-	rspData, ok := rsp.(RespBulkString)
+	rspData, ok := rsp.(RespString)
 	assert.True(t, ok)
-	assert.Equal(t, RespBulkString{"echo-hello-world"}, rspData)
+	assert.Equal(t, RespString{"echo-hello-world"}, rspData)
 }
 
 func TestSetAndGetKeyCommand(t *testing.T) {
@@ -33,15 +33,15 @@ func TestSetAndGetKeyCommand(t *testing.T) {
 
 	setCommand := "*3\r\n$3\r\nSET\r\n$3\r\nbla\r\n$3\r\nbli\r\n"
 	setRsp := xredis.handleClientRequest([]byte(setCommand))
-	setRspData, ok := setRsp.(RespBulkString)
+	setRspData, ok := setRsp.(RespString)
 	assert.True(t, ok)
-	assert.Equal(t, RespBulkString{"OK"}, setRspData)
+	assert.Equal(t, RespString{"OK"}, setRspData)
 
 	getCommand := "*2\r\n$3\r\nGET\r\n$3\r\nbla\r\n"
 	getRsp := xredis.handleClientRequest([]byte(getCommand))
-	getRspData, ok := getRsp.(RespBulkString)
+	getRspData, ok := getRsp.(RespString)
 	assert.True(t, ok)
-	assert.Equal(t, RespBulkString{"bli"}, getRspData)
+	assert.Equal(t, RespString{"bli"}, getRspData)
 }
 
 func TestGetEmptyKeyCommand(t *testing.T) {
@@ -61,8 +61,8 @@ func TestDeleteKeyCommand(t *testing.T) {
 	deleteCommand := "*2\r\n$3\r\nDEL\r\n$3\r\nbla\r\n"
 	xredis.handleClientRequest([]byte(setCommand))
 	getRsp1 := xredis.handleClientRequest([]byte(getCommand))
-	getRspData1, _ := getRsp1.(RespBulkString)
-	assert.Equal(t, RespBulkString{"bli"}, getRspData1)
+	getRspData1, _ := getRsp1.(RespString)
+	assert.Equal(t, RespString{"bli"}, getRspData1)
 
 	deleteRsp1 := xredis.handleClientRequest([]byte(deleteCommand))
 	deleteRspData1, ok := deleteRsp1.(RespInt)
@@ -98,16 +98,16 @@ func TestSetAndGetKeyCommandWithExTimeout(t *testing.T) {
 
 	setCommand := "*5\r\n$3\r\nSET\r\n$3\r\nbla\r\n$3\r\nbli\r\n$2\r\nEX\r\n$1\r\n1\r\n"
 	setRsp := xredis.handleClientRequest([]byte(setCommand))
-	setRspData, ok := setRsp.(RespBulkString)
+	setRspData, ok := setRsp.(RespString)
 	assert.True(t, ok)
-	assert.Equal(t, RespBulkString{"OK"}, setRspData)
+	assert.Equal(t, RespString{"OK"}, setRspData)
 
 	time.Sleep(995 * time.Millisecond)
 	getCommand := "*2\r\n$3\r\nGET\r\n$3\r\nbla\r\n"
 	getRsp1 := xredis.handleClientRequest([]byte(getCommand))
-	getRspData1, ok := getRsp1.(RespBulkString)
+	getRspData1, ok := getRsp1.(RespString)
 	assert.True(t, ok)
-	assert.Equal(t, RespBulkString{"bli"}, getRspData1)
+	assert.Equal(t, RespString{"bli"}, getRspData1)
 
 	time.Sleep(10 * time.Millisecond)
 	getRsp2 := xredis.handleClientRequest([]byte(getCommand))
@@ -120,16 +120,16 @@ func TestSetAndGetKeyCommandWithPxTimeout(t *testing.T) {
 
 	setCommand := "*5\r\n$3\r\nSET\r\n$3\r\nbla\r\n$3\r\nbli\r\n$2\r\nPX\r\n$3\r\n100\r\n"
 	setRsp := xredis.handleClientRequest([]byte(setCommand))
-	setRspData, ok := setRsp.(RespBulkString)
+	setRspData, ok := setRsp.(RespString)
 	assert.True(t, ok)
-	assert.Equal(t, RespBulkString{"OK"}, setRspData)
+	assert.Equal(t, RespString{"OK"}, setRspData)
 
 	time.Sleep(95 * time.Millisecond)
 	getCommand := "*2\r\n$3\r\nGET\r\n$3\r\nbla\r\n"
 	getRsp1 := xredis.handleClientRequest([]byte(getCommand))
-	getRspData1, ok := getRsp1.(RespBulkString)
+	getRspData1, ok := getRsp1.(RespString)
 	assert.True(t, ok)
-	assert.Equal(t, RespBulkString{"bli"}, getRspData1)
+	assert.Equal(t, RespString{"bli"}, getRspData1)
 
 	time.Sleep(10 * time.Millisecond)
 	getRsp2 := xredis.handleClientRequest([]byte(getCommand))
@@ -147,16 +147,16 @@ func TestSetAndGetKeyCommandWithExatTimeout(t *testing.T) {
 	millisToExpireTimestamp := expireTimestamp*1000 - now
 	setCommand := "*5\r\n$3\r\nSET\r\n$3\r\nbla\r\n$3\r\nbli\r\n$4\r\nEXAT\r\n$" + expireTimestampStrLen + "\r\n" + expireTimestampStr + "\r\n"
 	setRsp := xredis.handleClientRequest([]byte(setCommand))
-	setRspData, ok := setRsp.(RespBulkString)
+	setRspData, ok := setRsp.(RespString)
 	assert.True(t, ok)
-	assert.Equal(t, RespBulkString{"OK"}, setRspData)
+	assert.Equal(t, RespString{"OK"}, setRspData)
 
 	time.Sleep(time.Duration((millisToExpireTimestamp - 5)) * time.Millisecond)
 	getCommand := "*2\r\n$3\r\nGET\r\n$3\r\nbla\r\n"
 	getRsp1 := xredis.handleClientRequest([]byte(getCommand))
-	getRspData1, ok := getRsp1.(RespBulkString)
+	getRspData1, ok := getRsp1.(RespString)
 	assert.True(t, ok)
-	assert.Equal(t, RespBulkString{"bli"}, getRspData1)
+	assert.Equal(t, RespString{"bli"}, getRspData1)
 
 	time.Sleep(10 * time.Millisecond)
 	getRsp2 := xredis.handleClientRequest([]byte(getCommand))
@@ -171,16 +171,16 @@ func TestSetAndGetKeyCommandWithPxatTimeout(t *testing.T) {
 	expireTimestampStrLen := strconv.Itoa(len(expireTimestampStr))
 	setCommand := "*5\r\n$3\r\nSET\r\n$3\r\nbla\r\n$3\r\nbli\r\n$4\r\nPXAT\r\n$" + expireTimestampStrLen + "\r\n" + expireTimestampStr + "\r\n"
 	setRsp := xredis.handleClientRequest([]byte(setCommand))
-	setRspData, ok := setRsp.(RespBulkString)
+	setRspData, ok := setRsp.(RespString)
 	assert.True(t, ok)
-	assert.Equal(t, RespBulkString{"OK"}, setRspData)
+	assert.Equal(t, RespString{"OK"}, setRspData)
 
 	time.Sleep(995 * time.Millisecond)
 	getCommand := "*2\r\n$3\r\nGET\r\n$3\r\nbla\r\n"
 	getRsp1 := xredis.handleClientRequest([]byte(getCommand))
-	getRspData1, ok := getRsp1.(RespBulkString)
+	getRspData1, ok := getRsp1.(RespString)
 	assert.True(t, ok)
-	assert.Equal(t, RespBulkString{"bli"}, getRspData1)
+	assert.Equal(t, RespString{"bli"}, getRspData1)
 
 	time.Sleep(10 * time.Millisecond)
 	getRsp2 := xredis.handleClientRequest([]byte(getCommand))

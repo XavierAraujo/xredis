@@ -31,10 +31,6 @@ type RespError struct {
 	str string
 }
 
-type RespBulkString struct {
-	str string
-}
-
 type RespArray struct {
 	elements []RespDataType
 }
@@ -43,8 +39,13 @@ type RespNil struct {
 }
 
 func (respString RespString) serialize() string {
+	// We serialize strings always as bulk string to avoid
+	// having to maintain 2 structs: one for bulk strings
+	// and other for simple strings
 	var builder strings.Builder
-	builder.WriteString(SERIALIZATION_PREFIX_STRING)
+	builder.WriteString(SERIALIZATION_PREFIX_BULK_STRING)
+	builder.WriteString(strconv.Itoa(len(respString.str)))
+	builder.WriteString(SERIALIZATION_SEPARATOR)
 	builder.WriteString(respString.str)
 	builder.WriteString(SERIALIZATION_SEPARATOR)
 	return builder.String()
@@ -62,16 +63,6 @@ func (respError RespError) serialize() string {
 	var builder strings.Builder
 	builder.WriteString(SERIALIZATION_PREFIX_ERROR)
 	builder.WriteString(respError.str)
-	builder.WriteString(SERIALIZATION_SEPARATOR)
-	return builder.String()
-}
-
-func (respBulkString RespBulkString) serialize() string {
-	var builder strings.Builder
-	builder.WriteString(SERIALIZATION_PREFIX_BULK_STRING)
-	builder.WriteString(strconv.Itoa(len(respBulkString.str)))
-	builder.WriteString(SERIALIZATION_SEPARATOR)
-	builder.WriteString(respBulkString.str)
 	builder.WriteString(SERIALIZATION_SEPARATOR)
 	return builder.String()
 }
@@ -132,7 +123,7 @@ func deserialize(data []byte) (RespDataType, int, error) {
 		}
 		strInitialPos := sizeTerminationIndex + len(SERIALIZATION_SEPARATOR)
 		bytesConsumed := sizeTerminationIndex + 2*len(SERIALIZATION_SEPARATOR) + strSize
-		return RespBulkString{string(data[strInitialPos : strInitialPos+strSize])}, bytesConsumed, nil
+		return RespString{string(data[strInitialPos : strInitialPos+strSize])}, bytesConsumed, nil
 	case SERIALIZATION_PREFIX_ARRAY:
 		sizeTerminationIndex := bytes.Index(data, []byte(SERIALIZATION_SEPARATOR))
 		if sizeTerminationIndex == -1 {
