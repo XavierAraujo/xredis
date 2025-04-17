@@ -86,6 +86,10 @@ OK
 (integer) 1
 > RPUSH mylist "two"
 (integer) 2
+
+# SAVE (Changes are then loaded on boot)
+127.0.0.1:6379> SAVE
+OK
 ```
 
 

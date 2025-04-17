@@ -20,19 +20,19 @@ type RespDataType interface {
 }
 
 type RespString struct {
-	str string
+	Str string
 }
 
 type RespInt struct {
-	value int64
+	Value int64
 }
 
 type RespError struct {
-	str string
+	Str string
 }
 
 type RespArray struct {
-	elements []RespDataType
+	Elements []RespDataType
 }
 
 type RespNil struct {
@@ -44,9 +44,9 @@ func (respString RespString) serialize() string {
 	// and other for simple strings
 	var builder strings.Builder
 	builder.WriteString(SERIALIZATION_PREFIX_BULK_STRING)
-	builder.WriteString(strconv.Itoa(len(respString.str)))
+	builder.WriteString(strconv.Itoa(len(respString.Str)))
 	builder.WriteString(SERIALIZATION_SEPARATOR)
-	builder.WriteString(respString.str)
+	builder.WriteString(respString.Str)
 	builder.WriteString(SERIALIZATION_SEPARATOR)
 	return builder.String()
 }
@@ -54,7 +54,7 @@ func (respString RespString) serialize() string {
 func (respInt RespInt) serialize() string {
 	var builder strings.Builder
 	builder.WriteString(SERIALIZATION_PREFIX_INT)
-	builder.WriteString(strconv.FormatInt(respInt.value, 10))
+	builder.WriteString(strconv.FormatInt(respInt.Value, 10))
 	builder.WriteString(SERIALIZATION_SEPARATOR)
 	return builder.String()
 }
@@ -62,7 +62,7 @@ func (respInt RespInt) serialize() string {
 func (respError RespError) serialize() string {
 	var builder strings.Builder
 	builder.WriteString(SERIALIZATION_PREFIX_ERROR)
-	builder.WriteString(respError.str)
+	builder.WriteString(respError.Str)
 	builder.WriteString(SERIALIZATION_SEPARATOR)
 	return builder.String()
 }
@@ -70,9 +70,9 @@ func (respError RespError) serialize() string {
 func (respArray RespArray) serialize() string {
 	var builder strings.Builder
 	builder.WriteString(SERIALIZATION_PREFIX_ARRAY)
-	builder.WriteString(strconv.Itoa(len(respArray.elements)))
+	builder.WriteString(strconv.Itoa(len(respArray.Elements)))
 	builder.WriteString(SERIALIZATION_SEPARATOR)
-	for _, element := range respArray.elements {
+	for _, element := range respArray.Elements {
 		builder.WriteString(element.serialize())
 	}
 	return builder.String()

@@ -65,7 +65,7 @@ func TestBasicStringDeserialization(t *testing.T) {
 	assert.Nil(t, err)
 	respString, ok := dataType.(RespString)
 	assert.Equal(t, true, ok)
-	assert.Equal(t, "hello world", respString.str)
+	assert.Equal(t, "hello world", respString.Str)
 	assert.Equal(t, 14, bytesConsumed)
 }
 
@@ -81,7 +81,7 @@ func TestBasicIntDeserialization(t *testing.T) {
 	assert.Nil(t, err)
 	respInt, ok := dataType.(RespInt)
 	assert.Equal(t, true, ok)
-	assert.Equal(t, int64(101), respInt.value)
+	assert.Equal(t, int64(101), respInt.Value)
 	assert.Equal(t, 6, bytesConsumed)
 }
 
@@ -103,7 +103,7 @@ func TestBasicErrorDeserialization(t *testing.T) {
 	assert.Nil(t, err)
 	respError, ok := dataType.(RespError)
 	assert.Equal(t, true, ok)
-	assert.Equal(t, "error occurred", respError.str)
+	assert.Equal(t, "error occurred", respError.Str)
 	assert.Equal(t, 17, bytesConsumed)
 }
 
@@ -119,7 +119,7 @@ func TestBasicBulkStringDeserialization(t *testing.T) {
 	assert.Nil(t, err)
 	respString, ok := dataType.(RespString)
 	assert.Equal(t, true, ok)
-	assert.Equal(t, "hello world bulk", respString.str)
+	assert.Equal(t, "hello world bulk", respString.Str)
 	assert.Equal(t, 23, bytesConsumed)
 }
 
@@ -129,13 +129,13 @@ func TestBasicBulkStringArrayDeserialization(t *testing.T) {
 	assert.Nil(t, err)
 	respArray, ok := dataType.(RespArray)
 	assert.Equal(t, true, ok)
-	respString1, ok := respArray.elements[0].(RespString)
-	respString2, ok := respArray.elements[1].(RespString)
-	respString3, ok := respArray.elements[2].(RespString)
-	assert.Equal(t, 3, len(respArray.elements))
-	assert.Equal(t, "bla", respString1.str)
-	assert.Equal(t, "blo", respString2.str)
-	assert.Equal(t, "bli", respString3.str)
+	respString1, ok := respArray.Elements[0].(RespString)
+	respString2, ok := respArray.Elements[1].(RespString)
+	respString3, ok := respArray.Elements[2].(RespString)
+	assert.Equal(t, 3, len(respArray.Elements))
+	assert.Equal(t, "bla", respString1.Str)
+	assert.Equal(t, "blo", respString2.Str)
+	assert.Equal(t, "bli", respString3.Str)
 	assert.Equal(t, 31, bytesConsumed)
 }
 
@@ -145,17 +145,17 @@ func TestMixedDataTypesArrayDeserialization(t *testing.T) {
 	assert.Nil(t, err)
 	respArray, ok := dataType.(RespArray)
 	assert.Equal(t, true, ok)
-	respString1, ok := respArray.elements[0].(RespString)
-	respInt, ok := respArray.elements[1].(RespInt)
-	respString2, ok := respArray.elements[2].(RespString)
-	respError, ok := respArray.elements[3].(RespError)
-	respSubArray, ok := respArray.elements[4].(RespArray)
-	assert.Equal(t, 5, len(respArray.elements))
-	assert.Equal(t, "bla", respString1.str)
-	assert.Equal(t, int64(2025), respInt.value)
-	assert.Equal(t, "bli", respString2.str)
-	assert.Equal(t, "err", respError.str)
-	assert.Equal(t, "bla", respSubArray.elements[0].(RespString).str)
-	assert.Equal(t, "blo", respSubArray.elements[1].(RespString).str)
+	respString1, ok := respArray.Elements[0].(RespString)
+	respInt, ok := respArray.Elements[1].(RespInt)
+	respString2, ok := respArray.Elements[2].(RespString)
+	respError, ok := respArray.Elements[3].(RespError)
+	respSubArray, ok := respArray.Elements[4].(RespArray)
+	assert.Equal(t, 5, len(respArray.Elements))
+	assert.Equal(t, "bla", respString1.Str)
+	assert.Equal(t, int64(2025), respInt.Value)
+	assert.Equal(t, "bli", respString2.Str)
+	assert.Equal(t, "err", respError.Str)
+	assert.Equal(t, "bla", respSubArray.Elements[0].(RespString).Str)
+	assert.Equal(t, "blo", respSubArray.Elements[1].(RespString).Str)
 	assert.Equal(t, 54, bytesConsumed)
 }

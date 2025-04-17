@@ -253,12 +253,12 @@ func TestBasicLPush(t *testing.T) {
 	getCommand := "*2\r\n$3\r\nGET\r\n$4\r\nlist\r\n"
 	getRsp := xredis.handleRequest([]byte(getCommand))
 	list := getRsp.(RespArray)
-	elem1 := list.elements[0].(RespString)
-	elem2 := list.elements[1].(RespString)
-	elem3 := list.elements[2].(RespString)
-	assert.Equal(t, "zzzz", elem1.str)
-	assert.Equal(t, "yyyy", elem2.str)
-	assert.Equal(t, "xxxx", elem3.str)
+	elem1 := list.Elements[0].(RespString)
+	elem2 := list.Elements[1].(RespString)
+	elem3 := list.Elements[2].(RespString)
+	assert.Equal(t, "zzzz", elem1.Str)
+	assert.Equal(t, "yyyy", elem2.Str)
+	assert.Equal(t, "xxxx", elem3.Str)
 }
 
 func TestBasicRPush(t *testing.T) {
@@ -274,10 +274,10 @@ func TestBasicRPush(t *testing.T) {
 	getCommand := "*2\r\n$3\r\nGET\r\n$4\r\nlist\r\n"
 	getRsp := xredis.handleRequest([]byte(getCommand))
 	list := getRsp.(RespArray)
-	elem1 := list.elements[0].(RespString)
-	elem2 := list.elements[1].(RespString)
-	elem3 := list.elements[2].(RespString)
-	assert.Equal(t, "xxxx", elem1.str)
-	assert.Equal(t, "yyyy", elem2.str)
-	assert.Equal(t, "zzzz", elem3.str)
+	elem1 := list.Elements[0].(RespString)
+	elem2 := list.Elements[1].(RespString)
+	elem3 := list.Elements[2].(RespString)
+	assert.Equal(t, "xxxx", elem1.Str)
+	assert.Equal(t, "yyyy", elem2.Str)
+	assert.Equal(t, "zzzz", elem3.Str)
 }

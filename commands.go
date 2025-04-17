@@ -45,3 +45,11 @@ type RPushCommand struct {
 	value      RespDataType
 	rspChannel chan RespDataType
 }
+
+type SaveCommand struct {
+	rspChannel chan RespDataType
+}
+
+type LoadCommand struct {
+	rspChannel chan RespDataType
+}
