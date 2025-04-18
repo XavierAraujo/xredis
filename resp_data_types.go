@@ -85,7 +85,7 @@ func (respNil RespNil) serialize() string {
 	return builder.String()
 }
 
-func deserializeClientRequest(data []byte) (RespDataType, int, error) {
+func deserializeRespDataType(data []byte) (RespDataType, int, error) {
 	switch string(data[0]) {
 	case SERIALIZATION_PREFIX_STRING:
 		terminationIndex := bytes.Index(data, []byte(SERIALIZATION_SEPARATOR))
@@ -137,7 +137,7 @@ func deserializeClientRequest(data []byte) (RespDataType, int, error) {
 		totalBytesConsumed := sizeTerminationIndex + len(SERIALIZATION_SEPARATOR)
 		nextElemInitialPos := sizeTerminationIndex + len(SERIALIZATION_SEPARATOR)
 		for range arraySize {
-			element, bytesConsumed, err := deserializeClientRequest(data[nextElemInitialPos:])
+			element, bytesConsumed, err := deserializeRespDataType(data[nextElemInitialPos:])
 			if err != nil {
 				return nil, 0, err
 			}

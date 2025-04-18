@@ -61,7 +61,7 @@ func TestStringRespArraySerializer(t *testing.T) {
 
 func TestBasicStringDeserialization(t *testing.T) {
 	serializedData := []byte("+hello world\r\n")
-	dataType, bytesConsumed, err := deserializeClientRequest(serializedData)
+	dataType, bytesConsumed, err := deserializeRespDataType(serializedData)
 	assert.Nil(t, err)
 	respString, ok := dataType.(RespString)
 	assert.Equal(t, true, ok)
@@ -71,13 +71,13 @@ func TestBasicStringDeserialization(t *testing.T) {
 
 func TestNonTerminatedStringDeserialization(t *testing.T) {
 	serializedData := []byte("+hello world")
-	_, _, err := deserializeClientRequest(serializedData)
+	_, _, err := deserializeRespDataType(serializedData)
 	assert.NotNil(t, err)
 }
 
 func TestBasicIntDeserialization(t *testing.T) {
 	serializedData := []byte(":101\r\n")
-	dataType, bytesConsumed, err := deserializeClientRequest(serializedData)
+	dataType, bytesConsumed, err := deserializeRespDataType(serializedData)
 	assert.Nil(t, err)
 	respInt, ok := dataType.(RespInt)
 	assert.Equal(t, true, ok)
@@ -87,19 +87,19 @@ func TestBasicIntDeserialization(t *testing.T) {
 
 func TestNonNumericIntDeserialization(t *testing.T) {
 	serializedData := []byte(":101x\r\n")
-	_, _, err := deserializeClientRequest(serializedData)
+	_, _, err := deserializeRespDataType(serializedData)
 	assert.NotNil(t, err)
 }
 
 func TestNonTerminatedIntDeserialization(t *testing.T) {
 	serializedData := []byte(":101")
-	_, _, err := deserializeClientRequest(serializedData)
+	_, _, err := deserializeRespDataType(serializedData)
 	assert.NotNil(t, err)
 }
 
 func TestBasicErrorDeserialization(t *testing.T) {
 	serializedData := []byte("-error occurred\r\n")
-	dataType, bytesConsumed, err := deserializeClientRequest(serializedData)
+	dataType, bytesConsumed, err := deserializeRespDataType(serializedData)
 	assert.Nil(t, err)
 	respError, ok := dataType.(RespError)
 	assert.Equal(t, true, ok)
@@ -109,13 +109,13 @@ func TestBasicErrorDeserialization(t *testing.T) {
 
 func TestNonTerminatedErrorDeserialization(t *testing.T) {
 	serializedData := []byte("-error occurred")
-	_, _, err := deserializeClientRequest(serializedData)
+	_, _, err := deserializeRespDataType(serializedData)
 	assert.NotNil(t, err)
 }
 
 func TestBasicBulkStringDeserialization(t *testing.T) {
 	serializedData := []byte("$16\r\nhello world bulk\r\n")
-	dataType, bytesConsumed, err := deserializeClientRequest(serializedData)
+	dataType, bytesConsumed, err := deserializeRespDataType(serializedData)
 	assert.Nil(t, err)
 	respString, ok := dataType.(RespString)
 	assert.Equal(t, true, ok)
@@ -125,7 +125,7 @@ func TestBasicBulkStringDeserialization(t *testing.T) {
 
 func TestBasicBulkStringArrayDeserialization(t *testing.T) {
 	serializedData := []byte("*3\r\n$3\r\nbla\r\n$3\r\nblo\r\n$3\r\nbli\r\n")
-	dataType, bytesConsumed, err := deserializeClientRequest(serializedData)
+	dataType, bytesConsumed, err := deserializeRespDataType(serializedData)
 	assert.Nil(t, err)
 	respArray, ok := dataType.(RespArray)
 	assert.Equal(t, true, ok)
@@ -141,7 +141,7 @@ func TestBasicBulkStringArrayDeserialization(t *testing.T) {
 
 func TestMixedDataTypesArrayDeserialization(t *testing.T) {
 	serializedData := []byte("*5\r\n$3\r\nbla\r\n:2025\r\n+bli\r\n-err\r\n*2\r\n$3\r\nbla\r\n$3\r\nblo\r\n")
-	dataType, bytesConsumed, err := deserializeClientRequest(serializedData)
+	dataType, bytesConsumed, err := deserializeRespDataType(serializedData)
 	assert.Nil(t, err)
 	respArray, ok := dataType.(RespArray)
 	assert.Equal(t, true, ok)
