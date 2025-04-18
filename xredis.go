@@ -4,24 +4,21 @@ import (
 	"bytes"
 	"encoding/gob"
 	"errors"
-	"io"
 	"log"
 	"math"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 )
 
-const DB_DUMP_FILE = "xredis_dump.db"
-
 type XRedis struct {
-	cache    map[string]RespDataType
-	commands chan Command
+	cache     map[string]RespDataType
+	commands  chan Command
+	persistor Persistor
 }
 
 func NewXRedis() *XRedis {
-	xredis := XRedis{make(map[string]RespDataType), make(chan Command)}
+	xredis := XRedis{make(map[string]RespDataType), make(chan Command), &DiskPersistor{}}
 	go func() {
 		for command := range xredis.commands {
 			switch cmd := command.(type) {
@@ -169,17 +166,9 @@ func (xredis *XRedis) handleSaveCommand(cmd SaveCommand) {
 		return
 	}
 
-	file, err := os.Create(DB_DUMP_FILE)
+	err = xredis.persistor.save(buf.Bytes())
 	if err != nil {
-		log.Println("Failed to create DB dump file: ", err)
-		cmd.rspChannel <- RespString{REQUEST_RESULT_FAIL}
-		return
-	}
-	defer file.Close()
-
-	_, err = file.Write(buf.Bytes())
-	if err != nil {
-		log.Println("Failed to write to DB dump file: ", err)
+		log.Println("Failed to save current state: ", err)
 		cmd.rspChannel <- RespString{REQUEST_RESULT_FAIL}
 		return
 	}
@@ -189,30 +178,20 @@ func (xredis *XRedis) handleSaveCommand(cmd SaveCommand) {
 
 func (xredis *XRedis) handleLoadCommand(cmd LoadCommand) {
 	defer close(cmd.rspChannel)
-	_, err := os.Stat(DB_DUMP_FILE)
-	if errors.Is(err, os.ErrNotExist) {
-		cmd.rspChannel <- RespString{REQUEST_RESULT_FAIL}
-		return
-	}
-	file, err := os.Open(DB_DUMP_FILE)
-	if err != nil {
-		log.Println("Failed to load DB dump file: ", err)
-		cmd.rspChannel <- RespString{REQUEST_RESULT_FAIL}
-		return
-	}
-	defer file.Close()
 
-	var buf bytes.Buffer
-	_, err = io.Copy(&buf, file)
+	data, err := xredis.persistor.load()
 	if err != nil {
-		log.Println("Failed to copy DB dump file to byte buffer: ", err)
+		log.Println("Failed to load stored state: ", err)
 		cmd.rspChannel <- RespString{REQUEST_RESULT_FAIL}
 	}
 
-	dec := gob.NewDecoder(&buf)
-	if err := dec.Decode(&xredis.cache); err != nil {
-		log.Fatalf("failed to deserialize DB dump file: %v", err)
-		cmd.rspChannel <- RespString{REQUEST_RESULT_FAIL}
+	if data != nil {
+		buffer := bytes.NewBuffer(data)
+		dec := gob.NewDecoder(buffer)
+		if err := dec.Decode(&xredis.cache); err != nil {
+			log.Fatalf("failed to deserialize DB dump file: %v", err)
+			cmd.rspChannel <- RespString{REQUEST_RESULT_FAIL}
+		}
 	}
 
 	cmd.rspChannel <- RespString{REQUEST_RESULT_OK}
