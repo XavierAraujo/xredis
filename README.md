@@ -100,3 +100,8 @@ Just run
 ```bash
 go test
 ```
+
+## 🚧 TODO
+
+- Handle TCP messages split. Currently we're assuming that each message comes in a single call conn.Read()
+- Implement a scheduled routine to remove expired keys. Otherwise they are only removed if someone tries to fetch them after their expiration time.
